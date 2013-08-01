@@ -33,7 +33,10 @@ plotter = (error, data)->
       if not isOld(date)
         val =
           hour: date.getHours()
-          day: 7 - Math.round((new Date() - date)/ (1000*60*60*24))
+          day: do (date)->
+            now = new Date()
+            now.setHours(0,0,0,0)
+            7 - Math.ceil( (now.getTime() - date.getTime()) / (24 *3600 * 1000))
           date: date.toLocaleDateString()
           value: parseFloat(d[1])
         ret.push(val)
@@ -83,6 +86,7 @@ plotter = (error, data)->
                 .enter().append("rect")
                 .attr("x", (d)->((d.hour - 1) * gridSize))
                 .attr("y", (d)->((d.day - 1) * gridSize))
+                .attr('data-dayoffset',(d)->(d.day))
                 .attr("rx", 4)
                 .attr("ry", 4)
                 .attr("class", "hour bordered")
@@ -93,7 +97,8 @@ plotter = (error, data)->
   heatMap.transition().duration(1000)
                 .style("fill", (d)->(colorScale(d.value)))
 
-  heatMap.append("title").text((d)->(d.value))
+  heatMap.append("title").text((d)->("#{d.date} #{d.hour}:00 - #{d.value}"))
+
 
   legend = svg.selectAll(".legend")
               .data([0].concat(colorScale.quantiles()), (d)->(d))
